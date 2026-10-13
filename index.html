@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Guía práctica para entender y usar ramas en Git: crear ramas, cambiar entre ellas y combinar el trabajo.">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath fill='%23f07855' d='M20 1 39 20 20 39 1 20Z'/%3E%3Cpath d='M14 30V10m0 10h5a6 6 0 0 0 6-6v-2' fill='none' stroke='%23fff' stroke-linecap='round' stroke-width='3'/%3E%3Ccircle cx='14' cy='10' r='3' fill='%23fff'/%3E%3Ccircle cx='14' cy='30' r='3' fill='%23fff'/%3E%3Ccircle cx='25' cy='12' r='3' fill='%23fff'/%3E%3C/svg%3E">
   <title>Ramas en Git — guía práctica</title>
   <style>
     :root {
@@ -61,10 +62,12 @@
       width: 32px;
       height: 32px;
       place-items: center;
-      border-radius: 10px;
-      background: var(--accent);
-      color: #171318;
-      font-size: 1.1rem;
+    }
+
+    .brand-mark svg {
+      display: block;
+      width: 32px;
+      height: 32px;
     }
 
     .hero { padding: 78px 0 56px; }
@@ -301,7 +304,15 @@
   <header>
     <div class="container">
       <a class="brand" href="#" aria-label="Git en claro, inicio">
-        <span class="brand-mark" aria-hidden="true">⑂</span>
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+          <path fill="#f07855" d="M20 1 39 20 20 39 1 20Z"/>
+          <path d="M14 30V10m0 10h5a6 6 0 0 0 6-6v-2" fill="none" stroke="#fff" stroke-linecap="round" stroke-width="3"/>
+          <circle cx="14" cy="10" r="3" fill="#fff"/>
+          <circle cx="14" cy="30" r="3" fill="#fff"/>
+          <circle cx="25" cy="12" r="3" fill="#fff"/>
+        </svg>
+      </span>
         GIT EN CLARO
       </a>
     </div>
