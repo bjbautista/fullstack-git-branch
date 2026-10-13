@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Guía práctica para entender y usar ramas en Git: crear ramas, cambiar entre ellas y combinar el trabajo.">
+  <title>Ramas en Git — guía práctica</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --background: #10131b;
+      --surface: #191e29;
+      --surface-light: #202735;
+      --text: #eef2f7;
+      --muted: #a3adbd;
+      --accent: #f07855;
+      --mint: #7de0c3;
+      --border: #30394a;
+      --code: #0d1118;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      background:
+        radial-gradient(ellipse at 82% 4%, rgb(66 89 126 / 18%), transparent 32rem),
+        var(--background);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.65;
+    }
+
+    a { color: inherit; }
+
+    .container {
+      width: min(1080px, calc(100% - 40px));
+      margin-inline: auto;
+    }
+
+    header {
+      padding: 24px 0;
+      border-bottom: 1px solid rgb(255 255 255 / 7%);
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--text);
+      font-size: .9rem;
+      font-weight: 750;
+      letter-spacing: .04em;
+      text-decoration: none;
+    }
+
+    .brand-mark {
+      display: grid;
+      width: 32px;
+      height: 32px;
+      place-items: center;
+      border-radius: 10px;
+      background: var(--accent);
+      color: #171318;
+      font-size: 1.1rem;
+    }
+
+    .hero { padding: 78px 0 56px; }
+
+    .eyebrow {
+      color: var(--mint);
+      font-size: .78rem;
+      font-weight: 800;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+
+    h1, h2, h3, p { margin-top: 0; }
+
+    h1 {
+      max-width: 760px;
+      margin: 16px 0;
+      font-size: clamp(2.6rem, 7vw, 5.2rem);
+      letter-spacing: -.065em;
+      line-height: 1.02;
+    }
+
+    h1 span { color: var(--accent); }
+
+    .hero-copy {
+      max-width: 650px;
+      margin-bottom: 28px;
+      color: var(--muted);
+      font-size: 1.12rem;
+    }
+
+    .hero-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .button {
+      display: inline-block;
+      padding: 10px 16px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      font-size: .9rem;
+      font-weight: 700;
+      text-decoration: none;
+      transition: border-color .2s, transform .2s;
+    }
+
+    .button:hover { border-color: var(--mint); transform: translateY(-2px); }
+    .button-primary { border-color: var(--accent); background: var(--accent); color: #171318; }
+
+    main { padding-bottom: 70px; }
+
+    section { margin-top: 34px; }
+
+    .section-heading {
+      margin-bottom: 20px;
+      font-size: clamp(1.55rem, 3vw, 2rem);
+      letter-spacing: -.035em;
+    }
+
+    .intro-grid, .cards, .commands-grid {
+      display: grid;
+      gap: 16px;
+    }
+
+    .intro-grid { grid-template-columns: 1.1fr .9fr; }
+    .cards { grid-template-columns: repeat(3, 1fr); }
+    .commands-grid { grid-template-columns: repeat(2, 1fr); }
+
+    .panel, .card, .command-card {
+      padding: 22px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--surface);
+    }
+
+    .panel p:last-child, .card p:last-child, .command-card p:last-child { margin-bottom: 0; }
+    .panel p, .card p, .command-card p, .flow-step p { color: var(--muted); }
+
+    .diagram {
+      display: flex;
+      min-height: 100%;
+      flex-direction: column;
+      justify-content: center;
+      gap: 14px;
+      background: linear-gradient(145deg, #202a38, #171d27);
+    }
+
+    .commit-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--muted);
+      font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+      font-size: .82rem;
+    }
+
+    .commit-dot {
+      width: 12px;
+      height: 12px;
+      flex: 0 0 12px;
+      border: 2px solid var(--mint);
+      border-radius: 50%;
+      background: var(--surface);
+    }
+
+    .branch-line {
+      width: 2px;
+      height: 15px;
+      margin: -13px 0 -13px 5px;
+      background: var(--border);
+    }
+
+    .branch-label {
+      margin-left: auto;
+      padding: 3px 9px;
+      border: 1px solid rgb(125 224 195 / 35%);
+      border-radius: 999px;
+      background: rgb(125 224 195 / 10%);
+      color: var(--mint);
+      font-size: .73rem;
+    }
+
+    .card-number {
+      display: inline-grid;
+      width: 34px;
+      height: 34px;
+      margin-bottom: 12px;
+      place-items: center;
+      border-radius: 10px;
+      background: rgb(240 120 85 / 13%);
+      color: var(--accent);
+      font-weight: 800;
+    }
+
+    h3 { margin-bottom: 8px; font-size: 1.02rem; }
+
+    .command-card { padding: 0; overflow: hidden; }
+
+    .command-card h3 { padding: 18px 20px 0; }
+
+    pre {
+      margin: 14px 0 0;
+      padding: 16px 20px;
+      overflow-x: auto;
+      background: var(--code);
+      color: #d4e4f0;
+      font-size: .88rem;
+      line-height: 1.8;
+    }
+
+    code { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
+
+    .command-card p { padding: 12px 20px 18px; font-size: .88rem; }
+
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      counter-reset: steps;
+    }
+
+    .flow-step {
+      position: relative;
+      padding: 18px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--surface);
+      counter-increment: steps;
+    }
+
+    .flow-step::before {
+      display: block;
+      margin-bottom: 12px;
+      color: var(--mint);
+      content: "0" counter(steps);
+      font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+      font-size: .85rem;
+      font-weight: 800;
+    }
+
+    .flow-step code, .inline-code {
+      padding: 2px 5px;
+      border-radius: 4px;
+      background: var(--code);
+      color: var(--mint);
+      font-size: .88em;
+    }
+
+    .note {
+      margin-top: 16px;
+      padding: 16px 18px;
+      border-left: 3px solid var(--mint);
+      border-radius: 0 10px 10px 0;
+      background: rgb(125 224 195 / 7%);
+      color: var(--muted);
+    }
+
+    .note strong { color: var(--text); }
+
+    .tips-list {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px 24px;
+      padding: 0;
+      list-style: none;
+    }
+
+    .tips-list li { color: var(--muted); }
+    .tips-list li::before { margin-right: 9px; color: var(--mint); content: "✓"; font-weight: 900; }
+
+    footer {
+      padding: 22px 0 30px;
+      border-top: 1px solid rgb(255 255 255 / 7%);
+      color: var(--muted);
+      font-size: .85rem;
+    }
+
+    @media (max-width: 760px) {
+      .intro-grid, .cards, .commands-grid { grid-template-columns: 1fr; }
+      .flow { grid-template-columns: repeat(2, 1fr); }
+      .hero { padding-top: 58px; }
+    }
+
+    @media (max-width: 460px) {
+      .container { width: min(100% - 28px, 1080px); }
+      .flow, .tips-list { grid-template-columns: 1fr; }
+      .panel, .card { padding: 18px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <a class="brand" href="#" aria-label="Git en claro, inicio">
+        <span class="brand-mark" aria-hidden="true">⑂</span>
+        GIT EN CLARO
+      </a>
+    </div>
+  </header>
+
+  <div class="container">
+    <section class="hero" aria-labelledby="page-title">
+      <div class="eyebrow">Guía rápida · Control de versiones</div>
+      <h1 id="page-title">Trabaja en paralelo.<br><span>Sin miedo a cambiar.</span></h1>
+      <p class="hero-copy">
+        Las ramas de Git te permiten desarrollar una idea de forma aislada y combinarla con el proyecto cuando esté lista.
+        Son ligeras, rápidas y fundamentales para colaborar.
+      </p>
+      <div class="hero-links">
+        <a class="button button-primary" href="#comandos">Ver comandos</a>
+        <a class="button" href="#flujo">Entender el flujo</a>
+      </div>
+    </section>
+
+    <main>
+      <section class="intro-grid" aria-labelledby="idea-title">
+        <article class="panel">
+          <div class="eyebrow">La idea</div>
+          <h2 class="section-heading" id="idea-title">¿Qué es una rama?</h2>
+          <p>
+            Una rama es una referencia móvil a un commit: en la práctica, una línea de trabajo independiente.
+            Al crear una rama no duplicas todo el proyecto; Git crea un puntero ligero. Puedes hacer commits allí
+            sin alterar las otras ramas.
+          </p>
+          <p>
+            La rama actual suele ser <code class="inline-code">main</code> (en proyectos antiguos, quizá
+            <code class="inline-code">master</code>). Para cada nueva función, arreglo o experimento puedes abrir otra.
+          </p>
+        </article>
+
+        <aside class="panel diagram" aria-label="Diagrama simplificado de ramas y commits">
+          <div class="commit-row"><span class="commit-dot"></span>commit inicial <span class="branch-label">main</span></div>
+          <div class="branch-line" aria-hidden="true"></div>
+          <div class="commit-row"><span class="commit-dot"></span>actualización del proyecto</div>
+          <div class="branch-line" aria-hidden="true"></div>
+          <div class="commit-row"><span class="commit-dot"></span>nuevo commit</div>
+          <div class="commit-row"><span class="commit-dot" style="border-color: var(--accent)"></span>desarrollo de función <span class="branch-label" style="border-color: rgb(240 120 85 / 35%); background: rgb(240 120 85 / 10%); color: var(--accent)">feature/busqueda</span></div>
+        </aside>
+      </section>
+
+      <section aria-labelledby="benefits-title">
+        <div class="eyebrow">¿Por qué usarlas?</div>
+        <h2 class="section-heading" id="benefits-title">Un espacio seguro para cada cambio</h2>
+        <div class="cards">
+          <article class="card">
+            <span class="card-number">01</span>
+            <h3>Aísla tu trabajo</h3>
+            <p>Prueba una solución o desarrolla una función sin modificar la línea principal del proyecto.</p>
+          </article>
+          <article class="card">
+            <span class="card-number">02</span>
+            <h3>Colabora con claridad</h3>
+            <p>Cada persona puede trabajar en su rama y compartir sus cambios para revisión antes de integrarlos.</p>
+          </article>
+          <article class="card">
+            <span class="card-number">03</span>
+            <h3>Experimenta y vuelve</h3>
+            <p>Si una idea no funciona, puedes abandonar su rama sin afectar el código que ya estaba estable.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="comandos" aria-labelledby="commands-title">
+        <div class="eyebrow">Git en la terminal</div>
+        <h2 class="section-heading" id="commands-title">Comandos esenciales</h2>
+        <div class="commands-grid">
+          <article class="command-card">
+            <h3>Consultar ramas</h3>
+            <pre><code>git branch
+git branch --all</code></pre>
+            <p>Muestra las ramas locales; con <code>--all</code>, también las ramas remotas.</p>
+          </article>
+          <article class="command-card">
+            <h3>Crear y cambiar de rama</h3>
+            <pre><code>git switch -c feature/busqueda
+# En Git antiguo:
+git checkout -b feature/busqueda</code></pre>
+            <p>Crea la rama y cambia a ella. <code>switch</code> es la opción moderna para cambiar de rama.</p>
+          </article>
+          <article class="command-card">
+            <h3>Cambiar de rama</h3>
+            <pre><code>git switch main
+git switch feature/busqueda</code></pre>
+            <p>Te mueve entre ramas. Guarda o confirma tus cambios antes de cambiar.</p>
+          </article>
+          <article class="command-card">
+            <h3>Integrar y limpiar</h3>
+            <pre><code>git switch main
+git merge feature/busqueda
+git branch -d feature/busqueda</code></pre>
+            <p>Integra la rama en la actual y, si ya se combinó, elimina la rama local.</p>
+          </article>
+        </div>
+        <div class="note">
+          <strong>Importante:</strong> <code>git merge</code> combina en la rama en la que estás ahora.
+          Cambia primero a la rama que debe recibir los cambios, normalmente <code>main</code>.
+        </div>
+      </section>
+
+      <section id="flujo" aria-labelledby="flow-title">
+        <div class="eyebrow">Un ejemplo habitual</div>
+        <h2 class="section-heading" id="flow-title">De una idea a la rama principal</h2>
+        <div class="flow">
+          <article class="flow-step">
+            <h3>Parte de una base actualizada</h3>
+            <p>Ve a <code>main</code> y trae lo último del equipo si trabajas con un remoto.</p>
+            <code>git switch main</code>
+          </article>
+          <article class="flow-step">
+            <h3>Abre una rama descriptiva</h3>
+            <p>Usa un nombre que indique la tarea, por ejemplo, una función o un arreglo.</p>
+            <code>git switch -c feature/busqueda</code>
+          </article>
+          <article class="flow-step">
+            <h3>Trabaja y guarda avances</h3>
+            <p>Haz cambios pequeños y crea commits con mensajes que expliquen su propósito.</p>
+            <code>git add .</code><br><code>git commit -m "Agrega búsqueda"</code>
+          </article>
+          <article class="flow-step">
+            <h3>Revisa e integra</h3>
+            <p>Comparte la rama para revisión y, cuando esté lista, combínala con la rama principal.</p>
+            <code>git switch main</code><br><code>git merge feature/busqueda</code>
+          </article>
+        </div>
+      </section>
+
+      <section aria-labelledby="conflicts-title">
+        <div class="eyebrow">Cuando dos cambios se cruzan</div>
+        <h2 class="section-heading" id="conflicts-title">¿Qué pasa con los conflictos?</h2>
+        <div class="panel">
+          <p>
+            Puede haber un conflicto si Git no puede decidir automáticamente cómo combinar cambios hechos en la misma
+            parte de un archivo. No significa que el repositorio esté roto: significa que hace falta una decisión humana.
+          </p>
+          <p>
+            Abre los archivos marcados, conserva o combina el contenido correcto, elimina los marcadores
+            <code class="inline-code">&lt;&lt;&lt;&lt;&lt;&lt;&lt;</code>,
+            <code class="inline-code">=======</code> y
+            <code class="inline-code">&gt;&gt;&gt;&gt;&gt;&gt;&gt;</code>, y después guarda y confirma la resolución.
+          </p>
+          <pre><code>git status
+# Edita los archivos en conflicto
+git add archivo-resuelto
+git commit</code></pre>
+        </div>
+      </section>
+
+      <section aria-labelledby="tips-title">
+        <div class="eyebrow">Buenas prácticas</div>
+        <h2 class="section-heading" id="tips-title">Ramas fáciles de mantener</h2>
+        <div class="panel">
+          <ul class="tips-list">
+            <li>Actualiza la rama base antes de empezar.</li>
+            <li>Usa nombres cortos y descriptivos: <code class="inline-code">fix/login</code>.</li>
+            <li>Mantén cada rama enfocada en una tarea.</li>
+            <li>Haz commits pequeños con mensajes claros.</li>
+            <li>Integra y comparte el trabajo con frecuencia.</li>
+            <li>Elimina ramas terminadas cuando ya no las necesites.</li>
+          </ul>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <footer>
+    <div class="container">Una rama no es una copia del proyecto: es una forma ligera de organizar líneas de trabajo en Git.</div>
+  </footer>
+</body>
+</html>
